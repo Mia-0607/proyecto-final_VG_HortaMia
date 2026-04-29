@@ -22,7 +22,7 @@ El proyecto fue desarrollado con **Quarto HTML**, usando Python para la limpieza
 | NASA GISTEMP | Datos de temperatura global histórica | https://data.giss.nasa.gov/gistemp/ | 27/04/2026 |
 | Data México - Temperaturas mensuales en México 1985-2025 | Datos mensuales de temperatura en México por entidad federativa | https://datamx.io/es/dataset/temperaturas-mensuales-en-mexico-1985-2025 | 27/04/2026 |
 | Data México - División política de México en GeoJSON 2024 | GeoJSON de estados de México | https://datamx.io/es/dataset/division-politica-de-mexico-estatal-y-municipal-en-geojson-2024 | 27/04/2026 |
-| Quarto | Herramienta utilizada para crear el sitio HTML interactivo | https://quarto.org/ | 27/04/2026 |
+| Quarto | Herramienta utilizada para crear el sitio HTML interactivo | https://quarto.org/ | - |
 
 ## Estructura del proyecto
 
