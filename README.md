@@ -63,20 +63,20 @@ proyecto-final_VG_HortaMia/
 ├── README.md
 ├── styles.css
 │
-├── data/
-   ├── raw/
-   │   ├── estados_mexico.geojson
-   │   ├── temperatura_global.csv
-   │   ├── temperatura_lluvias_mensual_mexico.csv
-   │   └── GlobalLandTemperaturesByCountry.csv
-   │
-   └── clean/
-       ├── comparacion_mexico_global.csv
-       ├── global_limpio.csv
-       ├── mapa_mexico_limpio.geojson
-       ├── mexico_anual_limpio.csv
-       ├── mapa_mexico_anual_limpio.geojson
-       └── paises_anual_limpio.csv│
+└── data/
+    ├── raw/
+    │   ├── estados_mexico.geojson
+    │   ├── temperatura_global.csv
+    │   ├── temperatura_lluvias_mensual_mexico.csv
+    │   └── GlobalLandTemperaturesByCountry.csv
+    │
+    └── clean/
+        ├── comparacion_mexico_global.csv
+        ├── global_limpio.csv
+        ├── mapa_mexico_limpio.geojson
+        ├── mexico_anual_limpio.csv
+        ├── mapa_mexico_anual_limpio.geojson
+        └── paises_anual_limpio.csv
 
 ```
 
@@ -96,19 +96,19 @@ proyecto-final_VG_HortaMia/
 
 1. Instalar Quarto desde la página oficial:
 
-https://quarto.org/
+   https://quarto.org/
 
 2. Instalar Python.
 
 3. Instalar las librerías necesarias de Python:
 
-py -m pip install pandas geopandas plotly matplotlib jupyter pyyaml
+   py -m pip install pandas geopandas plotly matplotlib jupyter pyyaml
 
-4.Abrir la carpeta del proyecto en Visual Studio Code.
+4. Abrir la carpeta del proyecto en Visual Studio Code.
 
 5. En la terminal, ejecutar:
 
-quarto preview
+   quarto preview
 
 6. Se abrirá una página local en el navegador donde se podrá visualizar el proyecto en formato HTML interactivo.
 
@@ -116,7 +116,7 @@ quarto preview
 
 Para generar la versión final del sitio, ejecutar:
 
-quarto render
+   quarto render
 
 Esto creará o actualizará la carpeta _site/, donde se encuentran los archivos HTML finales del proyecto.
 
@@ -124,7 +124,7 @@ Esto creará o actualizará la carpeta _site/, donde se encuentran los archivos 
 
 El proyecto final puede consultarse en el siguiente enlace:
 
-https://mia-0607.github.io/proyecto-final_VG_HortaMia/
+   https://mia-0607.github.io/proyecto-final_VG_HortaMia/
 
 
 ## Notas metodológicas
