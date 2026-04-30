@@ -1,0 +1,19 @@
+project:
+  type: website
+
+website:
+  title: "Temperatura histórica global y en México"
+  navbar:
+    background: "#4E342E"
+    foreground: "#FFF9F0"
+    left:
+      - text: "Narrativa visual"
+        href: index.qmd
+      - text: "Metodología"
+        href: metodologia.qmd
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true

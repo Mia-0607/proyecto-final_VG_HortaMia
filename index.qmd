@@ -25,7 +25,7 @@ execute:
   --cacao: #4E342E;
   --terracota: #B85C38;
   --ambar: #E5A84A;
-  --oliva: #7E8D5C;
+  --oliva: #667A45;
   --salvia: #AFC1A4;
   --vino: #7B3F4C;
   --tinta: #2F2A26;
@@ -73,183 +73,172 @@ p {
   line-height: 1.75;
 }
 
-blockquote, .callout {
+.callout-note, .callout-tip, .callout-important {
   border-radius: 18px !important;
-}
-
-.callout-note {
-  border-left-color: var(--oliva) !important;
-}
-
-.callout-tip {
-  border-left-color: var(--terracota) !important;
+  background-color: rgba(255,249,240,0.82) !important;
 }
 
 .panel-tabset, .cell-output-display, .plotly {
-  border-radius: 20px;
+  border-radius: 22px;
 }
 
-.card-animal {
-  background: rgba(255, 249, 240, 0.82);
-  border: 1px solid rgba(78,52,46,0.13);
-  box-shadow: 0 14px 35px rgba(78,52,46,0.10);
-  border-radius: 24px;
-  padding: 1.3rem 1.5rem;
-  margin: 1.2rem 0;
-  position: relative;
-  overflow: hidden;
+.cell-output-display {
+  background: rgba(255,249,240,0.78);
+  padding: 0.8rem;
+  box-shadow: 0 12px 30px rgba(78,52,46,0.09);
+  border: 1px solid rgba(78,52,46,0.10);
 }
 
-.card-animal::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse at 18% 25%, rgba(78,52,46,0.08) 0 8%, transparent 8.5%),
-    radial-gradient(ellipse at 72% 15%, rgba(78,52,46,0.06) 0 7%, transparent 7.5%),
-    radial-gradient(ellipse at 84% 72%, rgba(78,52,46,0.06) 0 6%, transparent 6.5%);
-  pointer-events: none;
+.hero-box {
+  background: rgba(255,249,240,0.88);
+  border: 1px solid rgba(78,52,46,0.12);
+  border-left: 8px solid var(--terracota);
+  border-radius: 26px;
+  padding: 1.4rem 1.6rem;
+  box-shadow: 0 14px 34px rgba(78,52,46,0.11);
+  margin: 1rem 0 1.6rem 0;
 }
 
-.card-animal > * {
-  position: relative;
+.hero-box strong {
+  color: var(--vino);
 }
 
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
   margin: 1.4rem 0 1.8rem 0;
 }
 
 .metric {
-  background: rgba(255,255,255,0.72);
-  border: 1px solid rgba(126,141,92,0.28);
-  border-radius: 22px;
-  padding: 1rem;
-  box-shadow: 0 10px 28px rgba(78,52,46,0.08);
+  background: linear-gradient(180deg, rgba(255,249,240,0.96), rgba(247,239,228,0.92));
+  border: 1px solid rgba(78,52,46,0.14);
+  border-radius: 24px;
+  padding: 1.1rem;
+  box-shadow: 0 14px 32px rgba(78,52,46,0.12);
 }
 
 .metric strong {
   display: block;
-  font-size: 1.55rem;
+  font-size: 2rem;
   color: var(--terracota);
-  line-height: 1.2;
+  margin-bottom: .35rem;
 }
 
 .metric span {
   color: var(--cacao);
-  font-size: .92rem;
+  font-size: .96rem;
+  line-height: 1.45;
 }
 
-.source-note {
-  font-size: .92rem;
-  color: #5e5149;
+.source-list li {
+  margin-bottom: .55rem;
 }
 
-#TOC {
-  border-left: 3px solid rgba(184,92,56,0.25);
+.nav-card {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--cacao), #6D4C41);
+  color: #FFF9F0 !important;
+  padding: 0.8rem 1rem;
+  border-radius: 18px;
+  text-decoration: none;
+  font-weight: 700;
+  box-shadow: 0 12px 28px rgba(78,52,46,0.18);
 }
 
-a {
-  color: #8E4D2F;
+.nav-card:hover {
+  color: #FFF9F0 !important;
+  transform: translateY(-1px);
 }
 </style>
 
 ```{python}
-#| label: setup
 import pandas as pd
 import geopandas as gpd
 import plotly.express as px
 import plotly.graph_objects as go
-from IPython.display import Markdown, display
+from IPython.display import HTML, display
+import json
+```
 
-PALETA_LINEAS = {
-    "México": "#B85C38",
-    "Global": "#7E8D5C"
-}
+```{python}
+# Paleta visual del proyecto
+COLOR_CACAO = "#4E342E"
+COLOR_TERRACOTA = "#B85C38"
+COLOR_AMBAR = "#E5A84A"
+COLOR_OLIVA = "#667A45"
+COLOR_SALVIA = "#AFC1A4"
+COLOR_VINO = "#7B3F4C"
+COLOR_MARFIL = "#FFF9F0"
+COLOR_ARENA = "#F7EFE4"
 
 ESCALA_CALOR = [
-    [0.00, "#5B3A29"],
-    [0.20, "#7E8D5C"],
-    [0.40, "#C9B06A"],
-    [0.65, "#E5A84A"],
-    [0.82, "#D66A3A"],
+    [0.00, "#667A45"],
+    [0.18, "#AFC1A4"],
+    [0.38, "#E5C77A"],
+    [0.58, "#E5A84A"],
+    [0.78, "#B85C38"],
     [1.00, "#7B3F4C"]
 ]
 
-def formato_figura(fig, alto=520):
+PALETA_LINEAS = {
+    "México": COLOR_TERRACOTA,
+    "Global": COLOR_OLIVA
+}
+
+
+def aplicar_estilo(fig, alto=520):
     fig.update_layout(
         template="plotly_white",
         height=alto,
         font=dict(family="Arial", color="#2F2A26"),
-        title=dict(font=dict(size=21, color="#4E342E")),
+        title=dict(font=dict(size=21, color=COLOR_CACAO)),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(255,249,240,0.72)",
         hoverlabel=dict(
-            bgcolor="#4E342E",
-            font_size=13,
-            font_color="#FFF9F0"
+            bgcolor=COLOR_CACAO,
+            bordercolor=COLOR_CACAO,
+            font_color=COLOR_MARFIL
         ),
         legend=dict(
-            title=None,
             bgcolor="rgba(255,249,240,0.75)",
             bordercolor="rgba(78,52,46,0.18)",
             borderwidth=1
         ),
-        margin=dict(l=35, r=25, t=70, b=45)
+        margin=dict(l=40, r=30, t=70, b=45)
     )
-    fig.update_xaxes(
-        gridcolor="rgba(78,52,46,0.10)",
-        zerolinecolor="rgba(78,52,46,0.25)"
-    )
-    fig.update_yaxes(
-        gridcolor="rgba(78,52,46,0.10)",
-        zerolinecolor="rgba(78,52,46,0.25)"
-    )
+    fig.update_xaxes(gridcolor="rgba(78,52,46,0.10)", zerolinecolor="rgba(78,52,46,0.25)")
+    fig.update_yaxes(gridcolor="rgba(78,52,46,0.10)", zerolinecolor="rgba(78,52,46,0.25)")
     return fig
 ```
 
-# Introducción
-
-::: {.card-animal}
-En las últimas décadas, el aumento de la temperatura se ha convertido en una de las señales más claras del cambio climático. Sin embargo, hablar de calentamiento global puede sentirse lejano cuando no se conecta con datos cercanos.
-
-Este proyecto analiza la evolución de la temperatura histórica global y la compara con los registros de México. La pregunta central es:
-
-**¿Cuándo dejó de sentirse “normal” la temperatura en México y cómo se compara ese cambio con la tendencia global?**
-:::
-
-Para responderla se integran tres fuentes de información: temperatura global de NASA GISTEMP, temperatura mensual de México por entidad federativa y un archivo GeoJSON de los estados de México. El resultado no funciona como un dashboard aislado, sino como una narrativa visual: primero se observa la evolución nacional, después el contexto global, luego la comparación directa y finalmente la distribución territorial del calor en México.
-
-# Fuentes de datos y preparación
-
 ```{python}
-# Temperatura global NASA GISTEMP
+# Carga de datos
+# Coloca los archivos en data/raw/ con estos nombres:
+# temperatura_global.csv
+# temperatura_lluvias_mensual_mexico.csv
+# estados_mexico.geojson
+# GlobalLandTemperaturesByCountry.csv
+
 temperatura_global = pd.read_csv(
     "data/raw/temperatura_global.csv",
     skiprows=1,
     na_values="***"
 )
 
-# Temperatura mensual en México
 temperatura_mexico = pd.read_csv("data/raw/temperatura_lluvias_mensual_mexico.csv")
-
-# GeoJSON de estados de México
 estados_mexico = gpd.read_file("data/raw/estados_mexico.geojson")
+
+# Dataset de Kaggle por país
+temperatura_paises = pd.read_csv("data/raw/GlobalLandTemperaturesByCountry.csv")
 ```
 
-Las fuentes se procesaron para obtener datos anuales comparables. En México, la columna `PERIODO` se transformó a fecha para extraer el año y se excluyó 2026 porque el año todavía aparece incompleto en el archivo, lo que generaba una caída artificial al final de la serie.
-
 ```{python}
-# Crear una copia para limpiar los datos sin modificar el archivo original
+# Preparación de datos de México
 mexico_limpio = temperatura_mexico.copy()
-
-# Convertir PERIODO a fecha y extraer año
 mexico_limpio["PERIODO"] = pd.to_datetime(mexico_limpio["PERIODO"])
 mexico_limpio["ANIO"] = mexico_limpio["PERIODO"].dt.year
 
-# Usar el registro nacional para la serie anual de México
 mexico_nacional = mexico_limpio[
     (mexico_limpio["ENTIDAD"] == "Nacional") &
     (mexico_limpio["ANIO"] <= 2025)
@@ -265,63 +254,150 @@ mexico_anual = (
     )
 )
 
-# Limpieza de datos globales
+# Preparación de datos globales NASA
+
 global_limpio = temperatura_global[["Year", "J-D"]].copy()
-
-global_limpio = global_limpio.rename(columns={
-    "Year": "ANIO",
-    "J-D": "anomalia_global"
-})
-
+global_limpio = global_limpio.rename(columns={"Year": "ANIO", "J-D": "anomalia_global"})
 global_limpio["ANIO"] = pd.to_numeric(global_limpio["ANIO"], errors="coerce")
 global_limpio["anomalia_global"] = pd.to_numeric(global_limpio["anomalia_global"], errors="coerce")
-
 global_limpio = global_limpio.dropna()
 global_limpio = global_limpio[global_limpio["ANIO"] <= 2025]
+
+# Anomalía de México con periodo base 1985-2000
+base_mexico = mexico_anual[
+    (mexico_anual["ANIO"] >= 1985) &
+    (mexico_anual["ANIO"] <= 2000)
+]["temperatura_media_mexico"].mean()
+
+mexico_anual["anomalia_mexico"] = mexico_anual["temperatura_media_mexico"] - base_mexico
+
+comparacion = mexico_anual.merge(global_limpio, on="ANIO", how="inner")
+comparacion_larga = comparacion[["ANIO", "anomalia_mexico", "anomalia_global"]].melt(
+    id_vars="ANIO",
+    value_vars=["anomalia_mexico", "anomalia_global"],
+    var_name="region",
+    value_name="anomalia"
+)
+comparacion_larga["region"] = comparacion_larga["region"].replace({
+    "anomalia_mexico": "México",
+    "anomalia_global": "Global"
+})
 ```
 
 ```{python}
-#| label: metricas-principales
+# Preparación de mapa de México por año
+estados_mexico_limpio = estados_mexico.copy()
+estados_mexico_limpio["CVE_ENT"] = estados_mexico_limpio["CVE_ENT"].astype(str).str.zfill(2)
+estados_mexico_limpio = estados_mexico_limpio[["CVE_ENT", "NOMGEO", "geometry"]].copy()
 
-from IPython.display import HTML, display
+mexico_limpio_mapa = mexico_limpio.copy()
+mexico_limpio_mapa["CVE_ENT"] = mexico_limpio_mapa["CVE_ENT"].astype(str).str.zfill(2)
 
+mexico_estados_anual = (
+    mexico_limpio_mapa[
+        (mexico_limpio_mapa["ANIO"] <= 2025) &
+        (mexico_limpio_mapa["ENTIDAD"] != "Nacional")
+    ]
+    .groupby(["ANIO", "CVE_ENT", "ENTIDAD"], as_index=False)
+    .agg(
+        temperatura_media=("MEDIA", "mean"),
+        temperatura_minima=("MINIMA", "mean"),
+        temperatura_maxima=("MAXIMA", "mean")
+    )
+)
+
+mapa_mexico_anual = estados_mexico_limpio.merge(
+    mexico_estados_anual,
+    on="CVE_ENT",
+    how="left"
+)
+```
+
+```{python}
+# Preparación de mapa mundial por país
+# Los datos de temperatura vienen del CSV de Kaggle.
+# El contorno de países lo genera Plotly con locationmode="country names";
+# no se descargó un GeoJSON mundial adicional.
+paises_limpio = temperatura_paises.copy()
+paises_limpio["dt"] = pd.to_datetime(paises_limpio["dt"], errors="coerce")
+paises_limpio["ANIO"] = paises_limpio["dt"].dt.year
+paises_limpio["AverageTemperature"] = pd.to_numeric(paises_limpio["AverageTemperature"], errors="coerce")
+
+paises_anual = (
+    paises_limpio
+    .dropna(subset=["ANIO", "AverageTemperature", "Country"])
+    .query("ANIO >= 1900")
+    .groupby(["ANIO", "Country"], as_index=False)
+    .agg(temperatura_media=("AverageTemperature", "mean"))
+)
+
+# Ajustes mínimos de nombres para mejorar compatibilidad con Plotly
+paises_anual["Country_plotly"] = paises_anual["Country"].replace({
+    "United States": "United States of America",
+    "Congo (Democratic Republic Of The)": "Democratic Republic of the Congo",
+    "Congo": "Republic of the Congo",
+    "Côte D'Ivoire": "Cote d'Ivoire",
+    "Bosnia And Herzegovina": "Bosnia and Herzegovina",
+    "Tanzania": "United Republic of Tanzania",
+    "Burma": "Myanmar",
+    "Czech Republic": "Czechia",
+    "Timor Leste": "East Timor"
+})
+
+# Para controlar el tamaño del HTML, se muestra el periodo 1900-2013.
+# El dataset de Kaggle llega normalmente hasta 2013.
+paises_anual = paises_anual[paises_anual["ANIO"] <= 2013]
+```
+
+```{python}
+# Métricas principales
 inicio_mexico = mexico_anual.iloc[0]
 final_mexico = mexico_anual.iloc[-1]
 cambio_mexico = final_mexico["temperatura_media_mexico"] - inicio_mexico["temperatura_media_mexico"]
 
-anio_mas_calido_mexico = mexico_anual.loc[
-    mexico_anual["temperatura_media_mexico"].idxmax(), "ANIO"
-]
+anio_mas_calido_mexico = int(mexico_anual.loc[mexico_anual["temperatura_media_mexico"].idxmax(), "ANIO"])
 temp_mas_calida_mexico = mexico_anual["temperatura_media_mexico"].max()
 
-anio_global_max = global_limpio.loc[
-    global_limpio["anomalia_global"].idxmax(), "ANIO"
-]
+anio_global_max = int(global_limpio.loc[global_limpio["anomalia_global"].idxmax(), "ANIO"])
 anomalia_global_max = global_limpio["anomalia_global"].max()
 
+anio_mapa_mx_inicio = int(mapa_mexico_anual["ANIO"].min())
+anio_mapa_mx_final = int(mapa_mexico_anual["ANIO"].max())
+
+anio_mapa_global_inicio = int(paises_anual["ANIO"].min())
+anio_mapa_global_final = int(paises_anual["ANIO"].max())
+```
+
+::: {.hero-box}
+El calor rara vez se siente como una línea perfecta. Se siente como una tarde más pesada, una temporada que tarda más en refrescar o un año que rompe la expectativa de lo que antes parecía normal. Este artículo usa datos históricos para seguir esa pista: primero en México, después en el contexto global y finalmente en el mapa, donde el calor deja de ser una abstracción y aparece distribuido sobre territorios concretos.
+
+La pregunta que guía esta historia es: **¿cuándo dejó de sentirse “normal” la temperatura en México y cómo se compara ese cambio con la tendencia global?**
+:::
+
+```{python}
 display(HTML(f"""
 <div class="metric-grid">
   <div class="metric">
     <strong>{cambio_mexico:.2f} °C</strong>
     <span>Cambio entre {int(inicio_mexico["ANIO"])} y {int(final_mexico["ANIO"])} en la temperatura media nacional.</span>
   </div>
-
   <div class="metric">
-    <strong>{int(anio_mas_calido_mexico)}</strong>
+    <strong>{anio_mas_calido_mexico}</strong>
     <span>Año más cálido en México dentro del periodo analizado: {temp_mas_calida_mexico:.2f} °C.</span>
   </div>
-
   <div class="metric">
-    <strong>{int(anio_global_max)}</strong>
-    <span>Año con mayor anomalía global en el archivo usado: {anomalia_global_max:.2f} °C.</span>
+    <strong>{anio_global_max}</strong>
+    <span>Año con mayor anomalía global en el archivo NASA usado: {anomalia_global_max:.2f} °C.</span>
   </div>
 </div>
 """))
 ```
 
-# 1. México: una señal que aparece en la serie anual
+# 1. México: cuando la línea empieza a subir
 
-La primera forma de acercarse al problema es observar la temperatura media anual de México. Esta gráfica no busca mostrar cada mes por separado, sino la tendencia general del país año con año. La posición vertical codifica la temperatura media anual; la posición horizontal, el año.
+La primera señal está en la temperatura media anual de México. Esta gráfica no busca mostrar un evento aislado, sino el comportamiento de fondo: si los años recientes se mantienen cerca del comportamiento histórico o si empiezan a desplazarse hacia valores más altos.
+
+Al recorrer la línea con el cursor, se puede ver año por año la temperatura media nacional. Lo importante no es solo encontrar el punto más alto, sino notar que los años cálidos dejan de ser excepciones aisladas y comienzan a concentrarse hacia la parte más reciente de la serie.
 
 ```{python}
 fig_mexico_anual = px.line(
@@ -337,20 +413,22 @@ fig_mexico_anual = px.line(
 )
 
 fig_mexico_anual.update_traces(
-    line=dict(color="#B85C38", width=3),
-    marker=dict(size=7, color="#E5A84A", line=dict(color="#4E342E", width=1)),
-    hovertemplate="<b>Año:</b> %{x}<br><b>Temperatura media:</b> %{y:.2f} °C<extra></extra>"
+    line=dict(color=COLOR_TERRACOTA, width=3),
+    marker=dict(size=7, color=COLOR_AMBAR, line=dict(color=COLOR_CACAO, width=1)),
+    hovertemplate="Año: %{x}<br>Temperatura media: %{y:.2f} °C<extra></extra>"
 )
 
-fig_mexico_anual = formato_figura(fig_mexico_anual)
+fig_mexico_anual = aplicar_estilo(fig_mexico_anual)
 fig_mexico_anual.show()
 ```
 
-La lectura principal es que la serie no permanece estable. Aunque hay variaciones entre años, la parte reciente del periodo concentra valores más altos que los observados al inicio. Esto permite empezar a responder la pregunta: el calor deja de sentirse “normal” cuando los años cálidos dejan de ser excepciones aisladas y empiezan a repetirse.
+**Lectura de la gráfica.** La temperatura media nacional muestra una tendencia ascendente, con variaciones naturales entre años, pero con una acumulación visible de valores altos en la etapa más reciente. Esto sugiere que el calor no aparece solo como un pico ocasional, sino como parte de una trayectoria más persistente.
 
-# 2. Contexto global: anomalías de temperatura
+# 2. Contexto global: las anomalías dejan de ser pequeñas
 
-Para el contexto global se usa la anomalía anual de temperatura reportada por NASA GISTEMP. Una anomalía no representa la temperatura absoluta, sino cuánto se aleja cada año de un promedio histórico de referencia. Esto permite observar con más claridad si los años recientes son más cálidos o fríos respecto a un periodo base.
+Para entender si México forma parte de un patrón más amplio, conviene mirar primero al planeta completo. La anomalía global de temperatura indica cuánto se aleja cada año de un promedio histórico de referencia: valores positivos significan años más cálidos que ese periodo base.
+
+Esta gráfica cambia la pregunta: ya no se trata de saber si un año fue cálido en términos absolutos, sino de observar si el planeta se está alejando de su punto de referencia climático.
 
 ```{python}
 fig_global = px.line(
@@ -358,7 +436,7 @@ fig_global = px.line(
     x="ANIO",
     y="anomalia_global",
     markers=True,
-    title="Anomalía de temperatura global anual",
+    title="Contexto global: anomalía de temperatura anual",
     labels={
         "ANIO": "Año",
         "anomalia_global": "Anomalía de temperatura global (°C)"
@@ -366,64 +444,30 @@ fig_global = px.line(
 )
 
 fig_global.update_traces(
-    line=dict(color="#7B3F4C", width=3),
-    marker=dict(size=5, color="#C9B06A", line=dict(color="#4E342E", width=0.7)),
-    hovertemplate="<b>Año:</b> %{x}<br><b>Anomalía global:</b> %{y:.2f} °C<extra></extra>"
+    line=dict(color=COLOR_VINO, width=3),
+    marker=dict(size=5, color="#C9B06A", line=dict(color=COLOR_CACAO, width=0.7)),
+    hovertemplate="Año: %{x}<br>Anomalía global: %{y:.2f} °C<extra></extra>"
 )
 
-fig_global = formato_figura(fig_global)
+fig_global.add_hline(
+    y=0,
+    line_dash="dot",
+    line_color="rgba(78,52,46,0.45)",
+    annotation_text="Promedio de referencia",
+    annotation_position="bottom right"
+)
+
+fig_global = aplicar_estilo(fig_global)
 fig_global.show()
 ```
 
-En esta visualización, la historia global es clara: con el paso del tiempo, las anomalías positivas se vuelven más frecuentes y más altas. La línea muestra que el calentamiento no es un fenómeno puntual, sino una tendencia sostenida.
+**Lectura de la gráfica.** Las anomalías positivas se vuelven más frecuentes y más altas hacia las décadas recientes. En la primera parte de la serie aparecen años por debajo o cerca del promedio de referencia; hacia el final, los valores positivos dominan de manera clara.
 
 # 3. México frente al mundo
 
-Para hacer una comparación justa, la temperatura de México se transformó en anomalía usando como periodo base 1985–2000. También se reajustó la anomalía global al mismo periodo base. Así, ambas líneas expresan cuánto cambió cada región respecto a su propio comportamiento inicial dentro del periodo común.
+Comparar México con el mundo requiere poner ambas series en el mismo idioma. Por eso, la temperatura de México se transformó en anomalía usando como referencia el periodo 1985–2000. Así, ambas líneas muestran desviaciones respecto a un punto base y se puede observar si avanzan en una dirección parecida.
 
-```{python}
-# Calcular temperatura promedio base de México entre 1985 y 2000
-base_mexico = mexico_anual[
-    (mexico_anual["ANIO"] >= 1985) &
-    (mexico_anual["ANIO"] <= 2000)
-]["temperatura_media_mexico"].mean()
-
-mexico_anual["anomalia_mexico"] = (
-    mexico_anual["temperatura_media_mexico"] - base_mexico
-)
-
-# Reajustar la anomalía global al mismo periodo base 1985-2000
-base_global = global_limpio[
-    (global_limpio["ANIO"] >= 1985) &
-    (global_limpio["ANIO"] <= 2000)
-]["anomalia_global"].mean()
-
-global_limpio["anomalia_global_1985_2000"] = (
-    global_limpio["anomalia_global"] - base_global
-)
-
-comparacion = mexico_anual.merge(
-    global_limpio[["ANIO", "anomalia_global", "anomalia_global_1985_2000"]],
-    on="ANIO",
-    how="inner"
-)
-
-comparacion_larga = comparacion[[
-    "ANIO",
-    "anomalia_mexico",
-    "anomalia_global_1985_2000"
-]].melt(
-    id_vars="ANIO",
-    value_vars=["anomalia_mexico", "anomalia_global_1985_2000"],
-    var_name="region",
-    value_name="anomalia"
-)
-
-comparacion_larga["region"] = comparacion_larga["region"].replace({
-    "anomalia_mexico": "México",
-    "anomalia_global_1985_2000": "Global"
-})
-```
+La gráfica permite ver si México acompaña la tendencia global o si tiene años donde el cambio local se separa de la trayectoria planetaria.
 
 ```{python}
 fig_comparacion = px.line(
@@ -432,202 +476,343 @@ fig_comparacion = px.line(
     y="anomalia",
     color="region",
     markers=True,
-    title="Anomalía de temperatura: México vs. mundo",
+    title="Anomalía de temperatura: México frente al mundo",
     labels={
         "ANIO": "Año",
-        "anomalia": "Anomalía de temperatura respecto a 1985–2000 (°C)",
+        "anomalia": "Anomalía de temperatura (°C)",
         "region": "Región"
     },
     color_discrete_map=PALETA_LINEAS
 )
 
 fig_comparacion.update_traces(
-    line=dict(width=3),
-    marker=dict(size=6, line=dict(color="#4E342E", width=0.8)),
-    hovertemplate="<b>Año:</b> %{x}<br><b>Anomalía:</b> %{y:.2f} °C<extra></extra>"
+    marker=dict(size=6, line=dict(color=COLOR_CACAO, width=0.8)),
+    hovertemplate="Año: %{x}<br>Anomalía: %{y:.2f} °C<extra></extra>"
 )
 
 fig_comparacion.add_hline(
     y=0,
-    line_dash="dash",
+    line_dash="dot",
     line_color="rgba(78,52,46,0.45)",
     annotation_text="Periodo base",
     annotation_position="bottom right"
 )
 
-fig_comparacion = formato_figura(fig_comparacion)
+fig_comparacion = aplicar_estilo(fig_comparacion)
 fig_comparacion.show()
 ```
 
-La comparación muestra que México y el mundo comparten una dirección general: ambos se desplazan hacia anomalías positivas. Sin embargo, México presenta oscilaciones más marcadas en algunos años, lo que puede estar relacionado con la variabilidad regional, eventos climáticos específicos y la forma en que se promedian los datos nacionales.
+**Lectura de la gráfica.** México y el mundo comparten una señal general de calentamiento, aunque la línea mexicana puede presentar oscilaciones más marcadas por tratarse de una escala territorial menor. El mensaje principal es que México no aparece aislado de la tendencia global: su comportamiento acompaña el desplazamiento hacia temperaturas más altas.
 
-# 4. El calor no se distribuye igual en todo México
+# 4. El calor no se distribuye igual en México
 
-La última visualización cambia la escala: en lugar de observar el tiempo, se observa el territorio. Para esto se calculó la temperatura media por entidad federativa y se hizo un merge con el GeoJSON de estados usando la clave `CVE_ENT`.
+La temperatura no se reparte de forma uniforme. Un promedio nacional puede resumir la tendencia, pero también puede esconder diferencias regionales importantes. Por eso, el siguiente mapa permite seleccionar un año y observar la temperatura media anual por entidad federativa.
 
-```{python}
-# Crear copias para evitar modificar los datos originales
-estados_mexico_limpio = estados_mexico.copy()
-mexico_limpio_mapa = mexico_limpio.copy()
-
-# Convertir CVE_ENT al mismo tipo en ambos datasets
-estados_mexico_limpio["CVE_ENT"] = estados_mexico_limpio["CVE_ENT"].astype(int)
-mexico_limpio_mapa["CVE_ENT"] = mexico_limpio_mapa["CVE_ENT"].astype(int)
-
-# Calcular temperatura media por entidad, excluyendo el registro nacional y 2026
-mexico_estados_promedio = (
-    mexico_limpio_mapa[
-        (mexico_limpio_mapa["ANIO"] <= 2025) &
-        (mexico_limpio_mapa["ENTIDAD"] != "Nacional")
-    ]
-    .groupby(["CVE_ENT", "ENTIDAD"], as_index=False)
-    .agg(
-        temperatura_media=("MEDIA", "mean"),
-        temperatura_minima=("MINIMA", "mean"),
-        temperatura_maxima=("MAXIMA", "mean")
-    )
-)
-
-# Hacer merge con el GeoJSON
-mapa_mexico = estados_mexico_limpio.merge(
-    mexico_estados_promedio,
-    on="CVE_ENT",
-    how="left"
-)
-```
+El color de cada estado representa **la temperatura media anual de ese estado en el año seleccionado**. Los tonos verdes indican valores más bajos dentro de la escala; los tonos amarillos, terracota y vino indican valores más altos. El mapa no colorea por máximos históricos, sino por el promedio anual correspondiente al año que el lector elige en el control inferior.
 
 ```{python}
-fig_mapa = px.choropleth_map(
-    mapa_mexico,
-    geojson=mapa_mexico.geometry,
-    locations=mapa_mexico.index,
+fig_mapa_mexico = px.choropleth_map(
+    mapa_mexico_anual,
+    geojson=estados_mexico_limpio.__geo_interface__,
+    locations="CVE_ENT",
+    featureidkey="properties.CVE_ENT",
     color="temperatura_media",
+    animation_frame="ANIO",
     hover_name="NOMGEO",
-    hover_data={
-        "temperatura_media": ":.2f",
-        "temperatura_minima": ":.2f",
-        "temperatura_maxima": ":.2f",
-        "CVE_ENT": False
-    },
+    custom_data=["ANIO", "temperatura_media", "temperatura_minima", "temperatura_maxima"],
     color_continuous_scale=ESCALA_CALOR,
+    range_color=(14, 32),
     map_style="carto-positron",
     zoom=4,
     center={"lat": 23.6345, "lon": -102.5528},
-    title="Temperatura media por estado en México"
+    title=f"Temperatura media anual por estado en México ({anio_mapa_mx_inicio}–{anio_mapa_mx_final})",
+    labels={"temperatura_media": "Temperatura media (°C)", "ANIO": "Año"}
 )
 
-fig_mapa.update_layout(
+fig_mapa_mexico.update_layout(
     height=650,
     font=dict(family="Arial", color="#2F2A26"),
-    title=dict(font=dict(size=21, color="#4E342E")),
+    title=dict(font=dict(size=21, color=COLOR_CACAO)),
     paper_bgcolor="rgba(0,0,0,0)",
-    margin={"r": 0, "t": 60, "l": 0, "b": 0},
+    margin={"r":0, "t":70, "l":0, "b":0},
     coloraxis_colorbar=dict(
-    title=dict(
-        text="°C",
-        font=dict(color="#4E342E")
+        title=dict(text="°C", font=dict(color=COLOR_CACAO)),
+        tickfont=dict(color="#2F2A26")
     ),
-    tickfont=dict(color="#4E342E")
-)
+    hoverlabel=dict(bgcolor=COLOR_CACAO, bordercolor=COLOR_CACAO, font_color=COLOR_MARFIL)
 )
 
-fig_mapa.update_traces(
-    marker_line_width=0.6,
+hover_mapa_mexico = (
+    "<b>%{hovertext}</b><br>" +
+    "Año: %{customdata[0]}<br>" +
+    "Temperatura media: %{customdata[1]:.2f} °C<br>" +
+    "Temperatura mínima: %{customdata[2]:.2f} °C<br>" +
+    "Temperatura máxima: %{customdata[3]:.2f} °C" +
+    "<extra></extra>"
+)
+
+fig_mapa_mexico.update_traces(
     marker_line_color="rgba(78,52,46,0.65)",
-    hovertemplate=(
-        "<b>%{hovertext}</b><br>" +
-        "Temperatura media: %{customdata[0]:.2f} °C<br>" +
-        "Temperatura mínima: %{customdata[1]:.2f} °C<br>" +
-        "Temperatura máxima: %{customdata[2]:.2f} °C" +
-        "<extra></extra>"
-    )
+    marker_line_width=0.55,
+    hovertemplate=hover_mapa_mexico
 )
 
-fig_mapa.show()
+for frame in fig_mapa_mexico.frames:
+    for trace in frame.data:
+        trace.hovertemplate = hover_mapa_mexico
+        trace.marker.line = dict(color="rgba(78,52,46,0.65)", width=0.55)
+
+fig_mapa_mexico.show()
 ```
 
-El mapa confirma que hablar de “la temperatura de México” simplifica una realidad más diversa. Algunas entidades tienen temperaturas medias mucho más altas que otras, por lo que el calentamiento debe interpretarse también desde una perspectiva territorial.
+**Lectura del mapa.** La distribución espacial permite ver que el calor tiene geografía. Algunas entidades mantienen valores medios más altos de forma recurrente, mientras que otras se ubican en rangos menores. El selector de año ayuda a comparar si el patrón territorial se mantiene o si ciertos años intensifican la diferencia entre regiones.
 
-# Conclusión
+# 5. El mismo patrón visto desde el mundo
 
-::: {.callout-tip}
-La temperatura en México muestra una tendencia creciente durante el periodo analizado y, al compararla con la tendencia global, se observa que ambas siguen una dirección similar: los años recientes se alejan cada vez más del comportamiento inicial. La diferencia principal es que México presenta variaciones más marcadas, lo que vuelve importante analizar el fenómeno tanto en escala nacional como estatal.
-:::
+La última visualización amplía la mirada. En lugar de observar solo México, el mapa mundial muestra la temperatura media anual por país. Al avanzar por la línea del tiempo, el lector puede comparar cómo cambia la distribución espacial del calor y notar que los contrastes entre regiones no son iguales en todos los años.
 
-La respuesta a la pregunta inicial no es un único año exacto, sino un cambio de patrón: el calor deja de sentirse “normal” cuando las anomalías positivas se vuelven frecuentes y cuando los años recientes se concentran por encima del promedio usado como referencia. En ese sentido, la narrativa visual muestra que el calentamiento no solo es global; también aparece en los datos nacionales y se manifiesta de forma desigual entre entidades federativas.
-
-# Guardado de datos limpios
-
-Los archivos procesados se guardan en `data/clean` para que el proyecto sea reproducible.
+Este mapa debe leerse con una precaución: el archivo por país llega hasta 2013, por lo que no sustituye a la serie global más reciente de NASA. Su función dentro de la historia es territorial: mostrar que la temperatura no solo cambia en el tiempo, sino que también se expresa de manera distinta según el país.
 
 ```{python}
-mexico_anual.to_csv("data/clean/mexico_anual_limpio.csv", index=False)
-global_limpio.to_csv("data/clean/global_limpio.csv", index=False)
-comparacion.to_csv("data/clean/comparacion_mexico_global.csv", index=False)
-mapa_mexico.to_file("data/clean/mapa_mexico_limpio.geojson", driver="GeoJSON")
+fig_mapa_global = px.choropleth(
+    paises_anual,
+    locations="Country_plotly",
+    locationmode="country names",
+    color="temperatura_media",
+    animation_frame="ANIO",
+    animation_group="Country_plotly",
+    hover_name="Country",
+    custom_data=["ANIO", "Country", "temperatura_media"],
+    color_continuous_scale=ESCALA_CALOR,
+    range_color=(-10, 32),
+    projection="natural earth",
+    title=f"Temperatura media anual por país ({anio_mapa_global_inicio}–{anio_mapa_global_final})",
+    labels={"temperatura_media": "Temperatura media (°C)", "ANIO": "Año"}
+)
+
+fig_mapa_global.update_layout(
+    height=650,
+    font=dict(family="Arial", color="#2F2A26"),
+    title=dict(font=dict(size=21, color=COLOR_CACAO)),
+    paper_bgcolor="rgba(0,0,0,0)",
+    geo=dict(
+        bgcolor="rgba(255,249,240,0.55)",
+        showframe=False,
+        showcoastlines=True,
+        coastlinecolor="rgba(78,52,46,0.25)",
+        landcolor="#F7EFE4",
+        oceancolor="rgba(175,193,164,0.22)",
+        showocean=True
+    ),
+    margin={"r":0, "t":70, "l":0, "b":0},
+    coloraxis_colorbar=dict(
+        title=dict(text="°C", font=dict(color=COLOR_CACAO)),
+        tickfont=dict(color="#2F2A26")
+    ),
+    hoverlabel=dict(bgcolor=COLOR_CACAO, bordercolor=COLOR_CACAO, font_color=COLOR_MARFIL)
+)
+
+# Mantener la animación y forzar redibujado de cada cuadro para que los valores cambien al avanzar la línea del tiempo.
+if fig_mapa_global.layout.updatemenus:
+    for menu in fig_mapa_global.layout.updatemenus:
+        for button in menu.buttons:
+            if len(button.args) > 1 and isinstance(button.args[1], dict):
+                button.args[1]["frame"] = {"duration": 700, "redraw": True}
+                button.args[1]["transition"] = {"duration": 0}
+                button.args[1]["mode"] = "immediate"
+
+fig_mapa_global.update_layout(transition={"duration": 0})
+
+hover_mapa_global = (
+    "<b>%{customdata[1]}</b><br>" +
+    "Año: %{customdata[0]}<br>" +
+    "Temperatura media: %{customdata[2]:.2f} °C" +
+    "<extra></extra>"
+)
+
+fig_mapa_global.update_traces(
+    marker_line_color="rgba(78,52,46,0.45)",
+    marker_line_width=0.35,
+    hoverinfo="none",
+    hovertemplate=None
+)
+
+for frame in fig_mapa_global.frames:
+    for trace in frame.data:
+        trace.hoverinfo = "none"
+        trace.hovertemplate = None
+        trace.marker.line = dict(color="rgba(78,52,46,0.45)", width=0.35)
+
+# Tooltip persistente para que, durante la animación, el recuadro muestre el año activo.
+mapa_global_html = fig_mapa_global.to_html(
+    full_html=False,
+    include_plotlyjs=False,
+    div_id="mapa_global_animado"
+)
+
+tooltip_data = (
+    paises_anual[["Country", "ANIO", "temperatura_media"]]
+    .dropna()
+    .assign(ANIO=lambda df: df["ANIO"].astype(int))
+)
+
+tooltip_lookup = {}
+for row in tooltip_data.itertuples(index=False):
+    tooltip_lookup.setdefault(row.Country, {})[int(row.ANIO)] = round(float(row.temperatura_media), 2)
+
+mapa_global_hover_script = f"""
+<style>
+#mapa-global-tooltip {{
+  position: fixed;
+  display: none;
+  z-index: 99999;
+  pointer-events: none;
+  background: #4E342E;
+  color: #FFF9F0;
+  padding: 8px 10px;
+  border-radius: 2px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.25;
+  box-shadow: 0 10px 24px rgba(78,52,46,0.22);
+  max-width: 230px;
+}}
+#mapa-global-tooltip b {{
+  color: #FFF9F0;
+}}
+</style>
+<script>
+(function() {{
+  const gd = document.getElementById('mapa_global_animado');
+  if (!gd || typeof Plotly === 'undefined') return;
+
+  const dataByCountry = {json.dumps(tooltip_lookup, ensure_ascii=False)};
+  let activeCountry = null;
+  let activeYear = null;
+  let lastX = null;
+  let lastY = null;
+
+  const tooltip = document.createElement('div');
+  tooltip.id = 'mapa-global-tooltip';
+  document.body.appendChild(tooltip);
+
+  function yearFromSlider() {{
+    const textItems = gd.querySelectorAll('.slider-label, .slidertext, .currentvalue, text');
+    for (const item of textItems) {{
+      const txt = (item.textContent || '').trim();
+      const match = txt.match(/(19|20)\\d{{2}}/);
+      if (match) return parseInt(match[0], 10);
+    }}
+    return activeYear;
+  }}
+
+  function positionTooltip() {{
+    if (lastX === null || lastY === null) return;
+    tooltip.style.left = (lastX + 14) + 'px';
+    tooltip.style.top = (lastY + 14) + 'px';
+  }}
+
+  function renderTooltip() {{
+    if (!activeCountry) return;
+    const yearCandidate = yearFromSlider();
+    if (yearCandidate) activeYear = yearCandidate;
+    if (!activeYear) return;
+
+    const countryData = dataByCountry[activeCountry];
+    if (!countryData || countryData[activeYear] === undefined) {{
+      tooltip.style.display = 'none';
+      return;
+    }}
+
+    tooltip.innerHTML = '<b>' + activeCountry + '</b><br>' +
+      'Año: ' + activeYear + '<br>' +
+      'Temperatura media: ' + Number(countryData[activeYear]).toFixed(2) + ' °C';
+    positionTooltip();
+    tooltip.style.display = 'block';
+  }}
+
+  gd.on('plotly_hover', function(eventData) {{
+    const pt = eventData.points && eventData.points[0];
+    if (!pt) return;
+    if (pt.customdata && pt.customdata.length >= 2) {{
+      activeYear = parseInt(pt.customdata[0], 10);
+      activeCountry = pt.customdata[1];
+    }} else {{
+      activeCountry = pt.hovertext || pt.location || activeCountry;
+      activeYear = yearFromSlider();
+    }}
+    renderTooltip();
+  }});
+
+  gd.on('plotly_unhover', function() {{
+    // No se oculta durante la animación para que el lector pueda seguir el dato del país seleccionado.
+  }});
+
+  gd.addEventListener('mousemove', function(e) {{
+    lastX = e.clientX;
+    lastY = e.clientY;
+    positionTooltip();
+  }}, true);
+
+  gd.addEventListener('mouseleave', function() {{
+    activeCountry = null;
+    tooltip.style.display = 'none';
+  }}, true);
+
+  function updateFromFrame(frameData) {{
+    if (frameData && frameData.name) {{
+      const parsed = parseInt(frameData.name, 10);
+      if (!Number.isNaN(parsed)) activeYear = parsed;
+    }} else {{
+      const parsed = yearFromSlider();
+      if (parsed) activeYear = parsed;
+    }}
+    renderTooltip();
+  }}
+
+  gd.on('plotly_animatingframe', updateFromFrame);
+  gd.on('plotly_animated', updateFromFrame);
+  gd.on('plotly_sliderchange', function(eventData) {{
+    if (eventData && eventData.step && eventData.step.label) {{
+      const parsed = parseInt(eventData.step.label, 10);
+      if (!Number.isNaN(parsed)) activeYear = parsed;
+    }} else {{
+      activeYear = yearFromSlider();
+    }}
+    renderTooltip();
+  }});
+}})();
+</script>
+"""
+
+display(HTML(mapa_global_html + mapa_global_hover_script))
 ```
 
-# Fuentes de datos y herramientas utilizadas
+**Lectura del mapa.** El mapa global muestra que la temperatura media anual depende fuertemente de la ubicación geográfica, pero también permite observar cambios a través del tiempo. Al avanzar por los años, el lector puede comparar cómo se comportan distintas regiones del planeta y entender que el calentamiento global no se experimenta con la misma intensidad ni de la misma forma en todos los territorios.
 
-Los datos utilizados en este proyecto provienen de fuentes abiertas. Para la temperatura global se usó la base NASA GISTEMP, mientras que para México se utilizaron datos mensuales de temperatura por entidad federativa y un archivo GeoJSON de división política estatal.
+# Cierre: el calor como señal acumulada
 
-| Recurso | Uso en el proyecto | Liga |
-|---|---|---|
-| NASA GISTEMP | Datos de anomalía de temperatura global anual | https://data.giss.nasa.gov/gistemp/ |
-| Data México - Temperaturas mensuales en México 1985-2025 | Datos mensuales de temperatura mínima, media y máxima por entidad federativa | https://datamx.io/es/dataset/temperaturas-mensuales-en-mexico-1985-2025 |
-| Data México - División política de México en GeoJSON 2024 | Archivo GeoJSON para construir el mapa de estados de México | https://datamx.io/es/dataset/division-politica-de-mexico-estatal-y-municipal-en-geojson-2024 |
-| Quarto | Herramienta utilizada para crear el documento HTML interactivo | https://quarto.org/ |
-| Quarto - HTML Basics | Referencia para configurar documentos HTML en Quarto | https://quarto.org/docs/output-formats/html-basics.html |
-| Quarto - HTML Theming | Referencia para modificar el tema visual y estilos del documento HTML | https://quarto.org/docs/output-formats/html-themes.html |
-| Quarto - Creating a Website | Referencia para previsualizar y publicar sitios creados con Quarto | https://quarto.org/docs/websites/ |
+La historia completa apunta a una misma conclusión: el cambio no se observa únicamente en un año extremo, sino en la acumulación de señales. México muestra una trayectoria ascendente en su temperatura media anual; el mundo presenta anomalías cada vez más positivas; y los mapas muestran que el calor tiene una distribución territorial desigual.
 
-
-# Anexo técnico: revisión inicial de los datos
-
-Esta sección concentra las revisiones técnicas usadas durante la limpieza y validación del proyecto.
-
-::: {.panel-tabset}
-
-## Tamaño de archivos
-
-```{python}
-print("Temperatura global:", temperatura_global.shape)
-print("Temperatura México:", temperatura_mexico.shape)
-print("GeoJSON estados:", estados_mexico.shape)
-```
-
-## Columnas
-
-```{python}
-print("Columnas temperatura global:")
-print(temperatura_global.columns)
-
-print("\nColumnas temperatura México:")
-print(temperatura_mexico.columns)
-
-print("\nColumnas GeoJSON estados:")
-print(estados_mexico.columns)
-```
-
-## Primeras filas
-
-```{python}
-display(Markdown("**Temperatura global**"))
-display(temperatura_global.head())
-
-display(Markdown("**Temperatura México**"))
-display(temperatura_mexico.head())
-
-display(Markdown("**GeoJSON de estados**"))
-display(estados_mexico.drop(columns="geometry").head())
-```
-
-:::
+La pregunta inicial —cuándo dejó de sentirse normal el calor— no tiene una sola fecha exacta para todos los lugares. Lo que sí muestran los datos es que la normalidad térmica se ha ido desplazando: los años cálidos son más frecuentes, las anomalías positivas son más claras y el territorio permite ver que el calentamiento no es una idea abstracta, sino una experiencia medible en el espacio.
 
 # Fuentes
 
-- NASA GISTEMP: archivo `temperatura_global.csv`.
-- Temperaturas y lluvias mensuales de México: archivo `temperatura_lluvias_mensual_mexico.csv`.
-- GeoJSON de estados de México: archivo `estados_mexico.geojson`.
+<ul class="source-list">
+  <li><strong>NASA GISTEMP:</strong> datos de anomalía de temperatura global anual. <a href="https://data.giss.nasa.gov/gistemp/">https://data.giss.nasa.gov/gistemp/</a></li>
+  <li><strong>Data México - Temperaturas mensuales en México 1985-2025:</strong> datos mensuales de temperatura mínima, media y máxima por entidad federativa. <a href="https://datamx.io/es/dataset/temperaturas-mensuales-en-mexico-1985-2025">https://datamx.io/es/dataset/temperaturas-mensuales-en-mexico-1985-2025</a></li>
+  <li><strong>Data México - División política de México en GeoJSON 2024:</strong> archivo GeoJSON de entidades federativas. <a href="https://datamx.io/es/dataset/division-politica-de-mexico-estatal-y-municipal-en-geojson-2024">https://datamx.io/es/dataset/division-politica-de-mexico-estatal-y-municipal-en-geojson-2024</a></li>
+  <li><strong>Kaggle - Global Land Temperatures by Country:</strong> datos históricos de temperatura media mensual por país. <a href="https://www.kaggle.com/datasets/vijayvvenkitesh/global-land-temperatures-by-country">https://www.kaggle.com/datasets/vijayvvenkitesh/global-land-temperatures-by-country</a></li>
+  <li><strong>Quarto:</strong> herramienta usada para construir el sitio HTML interactivo. <a href="https://quarto.org/">https://quarto.org/</a></li>
+</ul>
 
-<p class="source-note">Nota: los archivos originales se encuentran en <code>data/raw</code> y los archivos limpios generados por este análisis se guardan en <code>data/clean</code>.</p>
+<a class="nav-card" href="metodologia.html">Ver metodología completa y anexo técnico</a>
+
+```{python}
+# Guardado de datos limpios para reproducibilidad
+mexico_anual.to_csv("data/clean/mexico_anual_limpio.csv", index=False)
+global_limpio.to_csv("data/clean/global_limpio.csv", index=False)
+comparacion.to_csv("data/clean/comparacion_mexico_global.csv", index=False)
+mapa_mexico_anual.to_file("data/clean/mapa_mexico_anual_limpio.geojson", driver="GeoJSON")
+paises_anual.to_csv("data/clean/paises_anual_limpio.csv", index=False)
+```

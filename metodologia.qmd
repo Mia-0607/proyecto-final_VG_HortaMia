@@ -1,0 +1,282 @@
+---
+title: "Metodología y anexo técnico"
+subtitle: "Temperatura histórica global y en México"
+author: "Mia Ana Itzel Horta López"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-title: "Contenido"
+    toc-location: right
+    smooth-scroll: true
+    code-fold: false
+    code-tools: false
+    number-sections: false
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+<style>
+:root {
+  --arena: #F7EFE4;
+  --marfil: #FFF9F0;
+  --cacao: #4E342E;
+  --terracota: #B85C38;
+  --ambar: #E5A84A;
+  --oliva: #667A45;
+  --salvia: #AFC1A4;
+  --vino: #7B3F4C;
+  --tinta: #2F2A26;
+}
+
+body {
+  background:
+    radial-gradient(circle at 14px 14px, rgba(78,52,46,0.045) 2px, transparent 2.5px),
+    linear-gradient(180deg, var(--marfil) 0%, var(--arena) 100%);
+  background-size: 32px 32px, 100% 100%;
+  color: var(--tinta);
+}
+
+.quarto-title-block {
+  background:
+    linear-gradient(135deg, rgba(78,52,46,0.94), rgba(184,92,56,0.78)),
+    radial-gradient(circle at 20% 20%, rgba(255,249,240,0.35), transparent 25%);
+  border-radius: 28px;
+  padding: 2.2rem 2.4rem;
+  margin: 1.5rem 0 2rem 0;
+  box-shadow: 0 18px 45px rgba(78,52,46,0.18);
+}
+
+.quarto-title-block h1,
+.quarto-title-block .subtitle,
+.quarto-title-block .quarto-title-meta-heading,
+.quarto-title-block .quarto-title-author-name {
+  color: #fffdf7 !important;
+}
+
+h1, h2, h3 { color: var(--cacao); font-weight: 800; }
+h1 { border-bottom: 3px solid rgba(184,92,56,0.28); padding-bottom: .35rem; }
+p { font-size: 1.03rem; line-height: 1.75; }
+
+.nav-card {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--cacao), #6D4C41);
+  color: #FFF9F0 !important;
+  padding: 0.8rem 1rem;
+  border-radius: 18px;
+  text-decoration: none;
+  font-weight: 700;
+  box-shadow: 0 12px 28px rgba(78,52,46,0.18);
+}
+</style>
+
+<a class="nav-card" href="index.html">Volver a la narrativa visual</a>
+
+# Objetivo de esta sección
+
+Esta página concentra la parte técnica del proyecto: origen de datos, limpieza, transformación, decisiones de visualización, guardado de archivos limpios y revisión inicial. La página principal se dejó como artículo narrativo para que el lector avance por la historia sin interrupciones técnicas.
+
+# Librerías utilizadas
+
+```{python}
+import pandas as pd
+import geopandas as gpd
+import plotly.express as px
+```
+
+# Fuentes de datos y herramientas
+
+| Recurso | Uso en el proyecto | Formato | URL |
+|---|---|---|---|
+| NASA GISTEMP | Anomalía de temperatura global anual | CSV | https://data.giss.nasa.gov/gistemp/ |
+| Data México - Temperaturas mensuales en México 1985-2025 | Temperatura mínima, media y máxima por entidad | CSV | https://datamx.io/es/dataset/temperaturas-mensuales-en-mexico-1985-2025 |
+| Data México - División política de México en GeoJSON 2024 | Geometría de estados de México para mapa | GeoJSON | https://datamx.io/es/dataset/division-politica-de-mexico-estatal-y-municipal-en-geojson-2024 |
+| Kaggle - Global Land Temperatures by Country | Temperatura media mensual por país | CSV | https://www.kaggle.com/datasets/vijayvvenkitesh/global-land-temperatures-by-country |
+| Quarto | Sitio HTML interactivo | `.qmd` / HTML | https://quarto.org/ |
+
+# Carga de archivos
+
+```{python}
+temperatura_global = pd.read_csv(
+    "data/raw/temperatura_global.csv",
+    skiprows=1,
+    na_values="***"
+)
+
+temperatura_mexico = pd.read_csv("data/raw/temperatura_lluvias_mensual_mexico.csv")
+estados_mexico = gpd.read_file("data/raw/estados_mexico.geojson")
+temperatura_paises = pd.read_csv("data/raw/GlobalLandTemperaturesByCountry.csv")
+```
+
+# Revisión inicial de estructura
+
+```{python}
+print("Temperatura global:", temperatura_global.shape)
+print("Temperatura México:", temperatura_mexico.shape)
+print("GeoJSON estados:", estados_mexico.shape)
+print("Temperatura por país:", temperatura_paises.shape)
+```
+
+```{python}
+print("Columnas temperatura global:")
+print(temperatura_global.columns)
+
+print("\nColumnas temperatura México:")
+print(temperatura_mexico.columns)
+
+print("\nColumnas GeoJSON estados:")
+print(estados_mexico.columns)
+
+print("\nColumnas temperatura por país:")
+print(temperatura_paises.columns)
+```
+
+# Limpieza y transformación de datos de México
+
+La columna `PERIODO` se convirtió a fecha para extraer el año. Para la serie nacional se usó únicamente el registro `Nacional`, evitando duplicar el promedio con los estados. El año 2026 se excluyó porque aparece incompleto en el archivo original y podía generar una caída artificial al final de la serie.
+
+```{python}
+mexico_limpio = temperatura_mexico.copy()
+mexico_limpio["PERIODO"] = pd.to_datetime(mexico_limpio["PERIODO"])
+mexico_limpio["ANIO"] = mexico_limpio["PERIODO"].dt.year
+
+mexico_nacional = mexico_limpio[
+    (mexico_limpio["ENTIDAD"] == "Nacional") &
+    (mexico_limpio["ANIO"] <= 2025)
+].copy()
+
+mexico_anual = (
+    mexico_nacional
+    .groupby("ANIO", as_index=False)
+    .agg(
+        temperatura_media_mexico=("MEDIA", "mean"),
+        temperatura_minima_mexico=("MINIMA", "mean"),
+        temperatura_maxima_mexico=("MAXIMA", "mean")
+    )
+)
+
+mexico_anual.head()
+```
+
+# Limpieza de datos globales NASA
+
+Del archivo de NASA se conservaron el año y el promedio anual `J-D`, que representa la anomalía global anual.
+
+```{python}
+global_limpio = temperatura_global[["Year", "J-D"]].copy()
+global_limpio = global_limpio.rename(columns={"Year": "ANIO", "J-D": "anomalia_global"})
+global_limpio["ANIO"] = pd.to_numeric(global_limpio["ANIO"], errors="coerce")
+global_limpio["anomalia_global"] = pd.to_numeric(global_limpio["anomalia_global"], errors="coerce")
+global_limpio = global_limpio.dropna()
+global_limpio = global_limpio[global_limpio["ANIO"] <= 2025]
+
+global_limpio.head()
+```
+
+# Cálculo de anomalía de México
+
+Para comparar México con el mundo se calculó una anomalía nacional usando como periodo base 1985–2000.
+
+```{python}
+base_mexico = mexico_anual[
+    (mexico_anual["ANIO"] >= 1985) &
+    (mexico_anual["ANIO"] <= 2000)
+]["temperatura_media_mexico"].mean()
+
+mexico_anual["anomalia_mexico"] = mexico_anual["temperatura_media_mexico"] - base_mexico
+
+comparacion = mexico_anual.merge(global_limpio, on="ANIO", how="inner")
+comparacion.head()
+```
+
+# Preparación del mapa de México por año
+
+Para el mapa se calculó la temperatura media anual por entidad federativa. Se mantuvo `CVE_ENT` como clave de unión con el GeoJSON. El color del mapa representa la temperatura media anual de cada estado en el año seleccionado.
+
+```{python}
+estados_mexico_limpio = estados_mexico.copy()
+estados_mexico_limpio["CVE_ENT"] = estados_mexico_limpio["CVE_ENT"].astype(str).str.zfill(2)
+estados_mexico_limpio = estados_mexico_limpio[["CVE_ENT", "NOMGEO", "geometry"]].copy()
+
+mexico_limpio_mapa = mexico_limpio.copy()
+mexico_limpio_mapa["CVE_ENT"] = mexico_limpio_mapa["CVE_ENT"].astype(str).str.zfill(2)
+
+mexico_estados_anual = (
+    mexico_limpio_mapa[
+        (mexico_limpio_mapa["ANIO"] <= 2025) &
+        (mexico_limpio_mapa["ENTIDAD"] != "Nacional")
+    ]
+    .groupby(["ANIO", "CVE_ENT", "ENTIDAD"], as_index=False)
+    .agg(
+        temperatura_media=("MEDIA", "mean"),
+        temperatura_minima=("MINIMA", "mean"),
+        temperatura_maxima=("MAXIMA", "mean")
+    )
+)
+
+mapa_mexico_anual = estados_mexico_limpio.merge(
+    mexico_estados_anual,
+    on="CVE_ENT",
+    how="left"
+)
+
+mapa_mexico_anual[["ANIO", "CVE_ENT", "NOMGEO", "temperatura_media"]].head()
+```
+
+# Preparación del mapa mundial por país
+
+El dataset de Kaggle contiene datos mensuales por país. Se transformó a promedio anual por país y se filtró desde 1900 para mantener una visualización más legible y un HTML menos pesado. El archivo llega normalmente hasta 2013.
+
+El mapa mundial usa dos elementos diferentes: los valores de temperatura provienen del archivo de Kaggle `GlobalLandTemperaturesByCountry.csv`, mientras que la silueta de los países no se descargó como archivo aparte. Para dibujar el mapa se usó `px.choropleth()` con `locationmode="country names"`; con esa configuración, Plotly usa su mapa mundial interno y relaciona los nombres de países de la columna `Country_plotly` con la geometría correspondiente.
+
+Para mantener la animación temporal, se conservó el control de reproducción y el selector de año. Además, se configuró el redibujado de cada cuadro de animación (`redraw=True`) para que el mapa actualice los valores conforme avanza la línea del tiempo.
+
+```{python}
+paises_limpio = temperatura_paises.copy()
+paises_limpio["dt"] = pd.to_datetime(paises_limpio["dt"], errors="coerce")
+paises_limpio["ANIO"] = paises_limpio["dt"].dt.year
+paises_limpio["AverageTemperature"] = pd.to_numeric(paises_limpio["AverageTemperature"], errors="coerce")
+
+paises_anual = (
+    paises_limpio
+    .dropna(subset=["ANIO", "AverageTemperature", "Country"])
+    .query("ANIO >= 1900")
+    .groupby(["ANIO", "Country"], as_index=False)
+    .agg(temperatura_media=("AverageTemperature", "mean"))
+)
+
+paises_anual["Country_plotly"] = paises_anual["Country"].replace({
+    "United States": "United States of America",
+    "Congo (Democratic Republic Of The)": "Democratic Republic of the Congo",
+    "Congo": "Republic of the Congo",
+    "Côte D'Ivoire": "Cote d'Ivoire",
+    "Bosnia And Herzegovina": "Bosnia and Herzegovina",
+    "Tanzania": "United Republic of Tanzania",
+    "Burma": "Myanmar",
+    "Czech Republic": "Czechia",
+    "Timor Leste": "East Timor"
+})
+
+paises_anual = paises_anual[paises_anual["ANIO"] <= 2013]
+paises_anual.head()
+```
+
+# Decisiones de diseño visual
+
+- **Gráfica de línea para México:** se usa posición horizontal para el tiempo y posición vertical para temperatura media anual. Esto permite identificar tendencia y variación interanual.
+- **Gráfica de anomalía global:** se usa línea temporal porque la pregunta es histórica. La línea de referencia en cero ayuda a separar años por encima y por debajo del promedio base.
+- **Comparación México vs. mundo:** se usan dos líneas con color por región para observar si ambas series avanzan en dirección similar.
+- **Mapa de México:** se usa coropleta porque la pregunta es espacial. El color representa temperatura media anual por estado y el selector permite cambiar de año.
+- **Mapa mundial:** se usa coropleta por país para observar la distribución territorial de la temperatura media anual en escala global.
+
+# Guardado de datos limpios
+
+```{python}
+mexico_anual.to_csv("data/clean/mexico_anual_limpio.csv", index=False)
+global_limpio.to_csv("data/clean/global_limpio.csv", index=False)
+comparacion.to_csv("data/clean/comparacion_mexico_global.csv", index=False)
+mapa_mexico_anual.to_file("data/clean/mapa_mexico_anual_limpio.geojson", driver="GeoJSON")
+paises_anual.to_csv("data/clean/paises_anual_limpio.csv", index=False)
+```
